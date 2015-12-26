@@ -1,5 +1,6 @@
 hs_err_pid*
 
 target/
-.idea/
+.idea
 *.iml
+.gradle
