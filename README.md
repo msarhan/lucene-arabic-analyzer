@@ -2,7 +2,7 @@
 Apache Lucene analyzer for Arabic language with root based stemmer.
 
 Stemming algorithms are used in information retrieval systems, text classifiers, indexers and text mining to extract roots of different words, so that words derived from the same stem or root are grouped together. Many stemming algorithms were built in different natural languages.
-This implementation is based on [Khoja stemmer](http://www.staff.science.uu.nl/~gent0113/islam/ummalqura.htm) which is one of the widely used Arabic stemmers.
+This implementation is based on [Khoja stemmer](http://zeus.cs.pacificu.edu/shereen/research.htm#stemming) which is one of the widely used Arabic stemmers.
 
 `ArabicRootExtractorAnalyzer` is responsible to do the following:
 
