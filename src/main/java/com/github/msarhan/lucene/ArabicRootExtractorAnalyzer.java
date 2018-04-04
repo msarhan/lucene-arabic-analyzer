@@ -24,75 +24,36 @@
 
 package com.github.msarhan.lucene;
 
+import java.io.IOException;
+import java.io.Reader;
 import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.analysis.CharArraySet;
+import org.apache.lucene.analysis.StopwordAnalyzerBase;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.Tokenizer;
+import org.apache.lucene.analysis.ar.ArabicNormalizationFilter;
 import org.apache.lucene.analysis.core.DecimalDigitFilter;
 import org.apache.lucene.analysis.core.LowerCaseFilter;
 import org.apache.lucene.analysis.core.StopFilter;
 import org.apache.lucene.analysis.miscellaneous.SetKeywordMarkerFilter;
 import org.apache.lucene.analysis.standard.StandardTokenizer;
-import org.apache.lucene.analysis.standard.std40.StandardTokenizer40;
-import org.apache.lucene.analysis.util.CharArraySet;
-import org.apache.lucene.analysis.util.StopwordAnalyzerBase;
-import org.apache.lucene.util.Version;
-
-import java.io.IOException;
-import java.io.Reader;
 
 /**
- * {@link Analyzer} for Arabic language.
- * <p>
- * This analyzer implements root-based stemmer to extract triliteral Arabic roots as specified by:
- * <i>
- * <a target="_blank" href="http://zeus.cs.pacificu.edu/shereen/research.htm#stemming">Khoja's stemmer</a>
- * </i>
- * <p>
- * The analysis package contains two primary components:
- * <ul>
- * <li>{@link ArabicRootExtractorStemFilter}: Arabic orthographic normalization and root extraction.
- * <li>Arabic stop words file: a set of default Arabic stop words.
- * </ul>
+ * {@link Analyzer} for Arabic language. <p> This analyzer implements root-based stemmer to extract
+ * triliteral Arabic roots as specified by: <i> <a target="_blank" href="http://zeus.cs.pacificu.edu/shereen/research.htm#stemming">Khoja's
+ * stemmer</a> </i> <p> The analysis package contains two primary components: <ul> <li>{@link
+ * ArabicRootExtractorStemFilter}: Arabic orthographic normalization and root extraction. <li>Arabic
+ * stop words file: a set of default Arabic stop words. </ul>
  *
  * @author Mouaffak A. Sarhan &lt;mouffaksarhan@gmail.com&gt;
  */
 public final class ArabicRootExtractorAnalyzer extends StopwordAnalyzerBase {
 
     /**
-     * File containing default Arabic stopwords.
-     * <p>
-     * Default stopword list is from http://members.unine.ch/jacques.savoy/clef/index.html
-     * The stopword list is BSD-Licensed.
+     * File containing default Arabic stopwords. <p> Default stopword list is from
+     * http://members.unine.ch/jacques.savoy/clef/index.html The stopword list is BSD-Licensed.
      */
     public final static String DEFAULT_STOPWORD_FILE = "stopwords.txt";
-
-    /**
-     * Returns an unmodifiable instance of the default stop-words set.
-     *
-     * @return an unmodifiable instance of the default stop-words set.
-     */
-    public static CharArraySet getDefaultStopSet() {
-        return DefaultSetHolder.DEFAULT_STOP_SET;
-    }
-
-    /**
-     * Atomically loads the DEFAULT_STOP_SET in a lazy fashion once the outer class
-     * accesses the static final set the first time.;
-     */
-    private static class DefaultSetHolder {
-        static final CharArraySet DEFAULT_STOP_SET;
-
-        static {
-            try {
-                DEFAULT_STOP_SET = loadStopwordSet(false, ArabicRootExtractorAnalyzer.class, DEFAULT_STOPWORD_FILE, "#");
-            } catch (IOException ex) {
-                // default set should always be present as it is part of the
-                // distribution (JAR)
-                throw new RuntimeException("Unable to load default stopword set");
-            }
-        }
-    }
-
     private final CharArraySet stemExclusionSet;
 
     /**
@@ -112,11 +73,11 @@ public final class ArabicRootExtractorAnalyzer extends StopwordAnalyzerBase {
     }
 
     /**
-     * Builds an analyzer with the given stop word. If a none-empty stem exclusion set is
-     * provided this analyzer will add a {@link SetKeywordMarkerFilter} before
-     * {@link ArabicRootExtractorStemmer}.
+     * Builds an analyzer with the given stop word. If a none-empty stem exclusion set is provided
+     * this analyzer will add a {@link SetKeywordMarkerFilter} before {@link
+     * ArabicRootExtractorStemmer}.
      *
-     * @param stopwords        a stopword set
+     * @param stopwords a stopword set
      * @param stemExclusionSet a set of terms not to be stemmed
      */
     public ArabicRootExtractorAnalyzer(CharArraySet stopwords, CharArraySet stemExclusionSet) {
@@ -125,35 +86,55 @@ public final class ArabicRootExtractorAnalyzer extends StopwordAnalyzerBase {
     }
 
     /**
-     * Creates
-     * {@link org.apache.lucene.analysis.Analyzer.TokenStreamComponents}
-     * used to tokenize all the text in the provided {@link Reader}.
+     * Returns an unmodifiable instance of the default stop-words set.
      *
-     * @return {@link org.apache.lucene.analysis.Analyzer.TokenStreamComponents}
-     * built from an {@link StandardTokenizer} filtered with
-     * {@link LowerCaseFilter}, {@link DecimalDigitFilter}, {@link StopFilter},
-     * {@link ArabicRootExtractorStemFilter}, {@link SetKeywordMarkerFilter}
+     * @return an unmodifiable instance of the default stop-words set.
+     */
+    public static CharArraySet getDefaultStopSet() {
+        return DefaultSetHolder.DEFAULT_STOP_SET;
+    }
+
+    /**
+     * Creates {@link org.apache.lucene.analysis.Analyzer.TokenStreamComponents} used to tokenize
+     * all the text in the provided {@link Reader}.
+     *
+     * @return {@link org.apache.lucene.analysis.Analyzer.TokenStreamComponents} built from an
+     * {@link StandardTokenizer} filtered with {@link LowerCaseFilter}, {@link DecimalDigitFilter},
+     * {@link StopFilter}, {@link ArabicRootExtractorStemFilter}, {@link SetKeywordMarkerFilter}
      */
     @Override
     protected TokenStreamComponents createComponents(String fieldName) {
-        final Tokenizer source;
-        if (getVersion().onOrAfter(Version.LATEST)) {
-            source = new StandardTokenizer();
-        } else {
-            source = new StandardTokenizer40();
-        }
-        TokenStream result = new LowerCaseFilter(source);
-        if (getVersion().onOrAfter(Version.LUCENE_5_4_0)) {
-            result = new DecimalDigitFilter(result);
-        }
+        final Tokenizer source = new StandardTokenizer();
+        TokenStream result = new org.apache.lucene.analysis.LowerCaseFilter(source);
+        result = new DecimalDigitFilter(result);
         // the order here is important: the stopword list is not normalized!
-        result = new StopFilter(result, stopwords);
-        result = new ArabicRootExtractorStemFilter(result);
+        result = new org.apache.lucene.analysis.StopFilter(result, stopwords);
+        // TODO maybe we should make ArabicNormalization filter also KeywordAttribute aware?!
+        result = new ArabicNormalizationFilter(result);
         if (!stemExclusionSet.isEmpty()) {
             result = new SetKeywordMarkerFilter(result, stemExclusionSet);
         }
-
-        return new TokenStreamComponents(source, result);
+        return new TokenStreamComponents(source, new ArabicRootExtractorStemFilter(result));
     }
-}
 
+    /**
+     * Atomically loads the DEFAULT_STOP_SET in a lazy fashion once the outer class accesses the
+     * static final set the first time.;
+     */
+    private static class DefaultSetHolder {
+
+        static final CharArraySet DEFAULT_STOP_SET;
+
+        static {
+            try {
+                DEFAULT_STOP_SET = loadStopwordSet(false, ArabicRootExtractorAnalyzer.class,
+                        DEFAULT_STOPWORD_FILE, "#");
+            } catch (IOException ex) {
+                // default set should always be present as it is part of the
+                // distribution (JAR)
+                throw new RuntimeException("Unable to load default stopword set");
+            }
+        }
+    }
+
+}

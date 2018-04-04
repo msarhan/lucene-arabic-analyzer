@@ -11,7 +11,8 @@ This implementation is based on [Khoja stemmer](http://zeus.cs.pacificu.edu/sher
 
 This way, documents will be indexed depending on its words roots, so, when you want to search in the index, you can input "علم" or "عالم" to get all documents containing "الْعَالَمِينَ".
 
-##Installation
+## Installation
+
 **Maven**
 ```xml
 <dependency>
@@ -30,7 +31,7 @@ dependencies {
 }
 ```
 
-##Usage
+## Usage
 
 ```java
 //Initialize the index
@@ -85,7 +86,7 @@ for (ScoreDoc hit : hits) {
 //~
 ```
 
-###Usage of `ArabicRootExtractorStemmer`
+### Usage of `ArabicRootExtractorStemmer`
 ```java
 ArabicRootExtractorStemmer stemmer = new ArabicRootExtractorStemmer();
 

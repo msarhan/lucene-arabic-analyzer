@@ -1,11 +1,10 @@
 package com.github.msarhan.lucene;
 
-import org.junit.Test;
-
 import static org.junit.Assert.assertEquals;
 
+import org.junit.Test;
+
 /**
- *
  * @author Mouaffak A. Sarhan &lt;mouffaksarhan@gmail.com&gt;
  */
 public class ArabicRootExtractorStemmerTests {
