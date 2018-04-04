@@ -18,7 +18,7 @@ This way, documents will be indexed depending on its words roots, so, when you w
 <dependency>
 	<groupId>com.github.msarhan</groupId>
 	<artifactId>lucene-arabic-analyzer</artifactId>
-	<version>1.0.0</version>
+	<version>1.1.0</version>
 </dependency>
 ```
 **Gradle**
@@ -27,7 +27,7 @@ repositories {
 	mavenCentral()
 }
 dependencies {
-	compile group: 'com.github.msarhan', name: 'lucene-arabic-analyzer', version:'1.0.0'
+	compile group: 'com.github.msarhan', name: 'lucene-arabic-analyzer', version:'1.1.0'
 }
 ```
 
