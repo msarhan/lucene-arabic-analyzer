@@ -26,12 +26,11 @@ package com.github.msarhan.lucene;
 
 import static org.apache.lucene.analysis.util.StemmerUtil.delete;
 
-import java.io.File;
+import java.io.BufferedReader;
 import java.io.IOException;
-import java.net.URISyntaxException;
-import java.net.URL;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.nio.charset.Charset;
-import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -51,7 +50,7 @@ import java.util.List;
 public class ArabicRootExtractorStemmer {
 
     public static final char HAMZA = '\u0621';
-		public static final char ALEF_MADDA = '\u0622';
+    public static final char ALEF_MADDA = '\u0622';
     public static final char ALEF_HAMZA_ABOVE = '\u0623';
     public static final char ALEF_HAMZA_BELOW = '\u0625';
     public static final char ALEF = '\u0627';
@@ -178,17 +177,21 @@ public class ArabicRootExtractorStemmer {
 
     private static List<String> fileToWordList(String fileName) {
         final List<String> words = new ArrayList<>();
-        try {
-            URL url = ArabicRootExtractorStemmer.class.getClassLoader()
-                    .getResource("com/github/msarhan/lucene/" + fileName);
-            if (url != null) {
-                Files.lines(new File(url.toURI()).toPath(), Charset.forName("UTF-8"))
-                        .map(line -> line.trim().split("\\s+"))
-                        .map(Arrays::stream)
-                        .forEach(stringStream -> stringStream.forEach(words::add));
+
+        InputStream input = ArabicRootExtractorStemmer.class.getClassLoader()
+                .getResourceAsStream("com/github/msarhan/lucene/" + fileName);
+        if (input != null) {
+            BufferedReader reader = new BufferedReader(new InputStreamReader(input, Charset.forName(
+                    "utf8")));
+            reader.lines()
+                    .map(line -> line.trim().split("\\s+"))
+                    .map(Arrays::stream)
+                    .forEach(stringStream -> stringStream.forEach(words::add));
+            try {
+                input.close();
+            } catch (IOException e) {
+                e.printStackTrace();
             }
-        } catch (IOException | URISyntaxException e) {
-            e.printStackTrace();
         }
 
         return words;
@@ -214,23 +217,23 @@ public class ArabicRootExtractorStemmer {
 
         // check if the word consists of two letters
         // and find it's root
-				if (input.length() == 2) {
-						input = processTwoLetters(input, flags);
-				}
+        if (input.length() == 2) {
+            input = processTwoLetters(input, flags);
+        }
 
         // if the word consists of three letters
-				if (input.length() == 3 && !flags.rootFound)
-				// check if it's a root
-				{
-						input = processThreeLetters(input, flags);
-				}
+        if (input.length() == 3 && !flags.rootFound)
+        // check if it's a root
+        {
+            input = processThreeLetters(input, flags);
+        }
 
         // if the word consists of four letters
-				if (input.length() == 4)
-				// check if it's a root
-				{
-						processFourLetters(input, flags);
-				}
+        if (input.length() == 4)
+        // check if it's a root
+        {
+            processFourLetters(input, flags);
+        }
 
         // if the root hasn't yet been found
         if (!flags.rootFound) {
@@ -275,24 +278,24 @@ public class ArabicRootExtractorStemmer {
                 output = output.substring(prefix.length);
 
                 // check to see if the word is a stopword
-								if (checkStopwords(output, flags)) {
-										return output;
-								}
+                if (checkStopwords(output, flags)) {
+                    return output;
+                }
 
                 // check to see if the word is a root of three or four letters
                 // if the word has only two letters, test to see if one was removed
-								if (output.length() == 2) {
-										output = processTwoLetters(output, flags);
-								} else if (output.length() == 3 && !flags.rootFound) {
-										output = processThreeLetters(output, flags);
-								} else if (output.length() == 4) {
-										processFourLetters(output, flags);
-								}
+                if (output.length() == 2) {
+                    output = processTwoLetters(output, flags);
+                } else if (output.length() == 3 && !flags.rootFound) {
+                    output = processThreeLetters(output, flags);
+                } else if (output.length() == 4) {
+                    processFourLetters(output, flags);
+                }
 
                 // if the root hasn't been found, check for patterns
-								if (!flags.rootFound && output.length() > 2) {
-										output = checkPatterns(output, flags);
-								}
+                if (!flags.rootFound && output.length() > 2) {
+                    output = checkPatterns(output, flags);
+                }
 
                 // if the root STILL hasn't been found
                 if (!flags.rootFound && !flags.stopwordFound && !flags.fromSuffixes) {
@@ -300,9 +303,9 @@ public class ArabicRootExtractorStemmer {
                     output = checkForSuffixes(output, flags);
                 }
 
-								if (flags.stopwordFound) {
-										return output;
-								}
+                if (flags.stopwordFound) {
+                    return output;
+                }
 
                 // if the root was found, return the modified word
                 if (flags.rootFound && !flags.stopwordFound) {
@@ -369,24 +372,24 @@ public class ArabicRootExtractorStemmer {
             output = input.substring(1);
 
             // check to see if the word is a stopword
-						if (checkStopwords(output, flags)) {
-								return output;
-						}
+            if (checkStopwords(output, flags)) {
+                return output;
+            }
 
             // check to see if the word is a root of three or four letters
             // if the word has only two letters, test to see if one was removed
-						if (output.length() == 2) {
-								output = processTwoLetters(output, flags);
-						} else if (output.length() == 3 && !flags.rootFound) {
-								output = processThreeLetters(output, flags);
-						} else if (output.length() == 4) {
-								processFourLetters(output, flags);
-						}
+            if (output.length() == 2) {
+                output = processTwoLetters(output, flags);
+            } else if (output.length() == 3 && !flags.rootFound) {
+                output = processThreeLetters(output, flags);
+            } else if (output.length() == 4) {
+                processFourLetters(output, flags);
+            }
 
             // if the root hasn't been found, check for patterns
-						if (!flags.rootFound && output.length() > 2) {
-								output = checkPatterns(output, flags);
-						}
+            if (!flags.rootFound && output.length() > 2) {
+                output = checkPatterns(output, flags);
+            }
 
             // if the root STILL hasnt' been found
             if (!flags.rootFound && !flags.stopwordFound) {
@@ -400,9 +403,9 @@ public class ArabicRootExtractorStemmer {
                 output = checkForPrefixes(output, flags);
             }
 
-						if (flags.stopwordFound) {
-								return output;
-						}
+            if (flags.stopwordFound) {
+                return output;
+            }
 
             if (flags.rootFound && !flags.stopwordFound) {
                 return output;
@@ -426,24 +429,24 @@ public class ArabicRootExtractorStemmer {
                 output = input.substring(definiteArticle.length, input.length());
 
                 // check to see if the word is a stopword
-								if (checkStopwords(output, flags)) {
-										return output;
-								}
+                if (checkStopwords(output, flags)) {
+                    return output;
+                }
 
                 // check to see if the word is a root of three or four letters
                 // if the word has only two letters, test to see if one was removed
-								if (output.length() == 2) {
-										output = processTwoLetters(output, flags);
-								} else if (output.length() == 3 && !flags.rootFound) {
-										output = processThreeLetters(output, flags);
-								} else if (output.length() == 4) {
-										processFourLetters(output, flags);
-								}
+                if (output.length() == 2) {
+                    output = processTwoLetters(output, flags);
+                } else if (output.length() == 3 && !flags.rootFound) {
+                    output = processThreeLetters(output, flags);
+                } else if (output.length() == 4) {
+                    processFourLetters(output, flags);
+                }
 
                 // if the root hasn't been found, check for patterns
-								if (!flags.rootFound && output.length() > 2) {
-										output = checkPatterns(output, flags);
-								}
+                if (!flags.rootFound && output.length() > 2) {
+                    output = checkPatterns(output, flags);
+                }
 
                 // if the root STILL hasnt' been found
                 if (!flags.rootFound && !flags.stopwordFound) {
@@ -457,9 +460,9 @@ public class ArabicRootExtractorStemmer {
                     output = checkForPrefixes(output, flags);
                 }
 
-								if (flags.stopwordFound) {
-										return output;
-								}
+                if (flags.stopwordFound) {
+                    return output;
+                }
 
                 // if the root was found, return the modified word
                 if (flags.rootFound && !flags.stopwordFound) {
@@ -468,9 +471,9 @@ public class ArabicRootExtractorStemmer {
             }
         }
 
-				if (output.length() > 3) {
-						return output;
-				}
+        if (output.length() > 3) {
+            return output;
+        }
 
         return input;
     }
@@ -483,19 +486,19 @@ public class ArabicRootExtractorStemmer {
         input = processDuplicate(input, flags);
 
         // check if the last letter was weak
-				if (!flags.rootFound) {
-						input = lastWeak(input, flags);
-				}
+        if (!flags.rootFound) {
+            input = lastWeak(input, flags);
+        }
 
         // check if the first letter was weak
-				if (!flags.rootFound) {
-						input = firstWeak(input, flags);
-				}
+        if (!flags.rootFound) {
+            input = firstWeak(input, flags);
+        }
 
         // check if the middle letter was weak
-				if (!flags.rootFound) {
-						input = middleWeak(input, flags);
-				}
+        if (!flags.rootFound) {
+            input = middleWeak(input, flags);
+        }
 
         return input;
     }
@@ -588,15 +591,15 @@ public class ArabicRootExtractorStemmer {
     private String checkPatterns(String input, Flags flags) {
         StringBuilder root = new StringBuilder();
         // if the first letter is a hamza, change it to an alif
-				if (input.length() > 0) {
-						if (input.charAt(0) == ALEF_HAMZA_ABOVE || input.charAt(0) == ALEF_HAMZA_BELOW
-										|| input.charAt(0) == ALEF_MADDA) {
-								root.append("j");
-								root.setCharAt(0, ALEF);
-								root.append(input.substring(1));
-								input = root.toString();
-						}
-				}
+        if (input.length() > 0) {
+            if (input.charAt(0) == ALEF_HAMZA_ABOVE || input.charAt(0) == ALEF_HAMZA_BELOW
+                    || input.charAt(0) == ALEF_MADDA) {
+                root.append("j");
+                root.setCharAt(0, ALEF);
+                root.append(input.substring(1));
+                input = root.toString();
+            }
+        }
 
         // try and find a pattern that matches the word
         int numberSameLetters;
@@ -612,14 +615,14 @@ public class ArabicRootExtractorStemmer {
                 numberSameLetters = 0;
                 // find out how many letters are the same at the same index
                 // so long as they're not a fa, ain, or lam
-								for (int j = 0; j < input.length(); j++) {
-										if (pattern.charAt(j) == input.charAt(j) &&
-														pattern.charAt(j) != FEH &&
-														pattern.charAt(j) != AEN &&
-														pattern.charAt(j) != LAM) {
-												numberSameLetters++;
-										}
-								}
+                for (int j = 0; j < input.length(); j++) {
+                    if (pattern.charAt(j) == input.charAt(j) &&
+                            pattern.charAt(j) != FEH &&
+                            pattern.charAt(j) != AEN &&
+                            pattern.charAt(j) != LAM) {
+                        numberSameLetters++;
+                    }
+                }
 
                 // test to see if the word matches the pattern ÇÝÚáÇ
                 if (input.length() == 6 && input.charAt(3) == input.charAt(5)
@@ -629,23 +632,23 @@ public class ArabicRootExtractorStemmer {
                     root.append(input.charAt(3));
                     output = root.toString();
                     output = processThreeLetters(output, flags);
-										if (flags.rootFound) {
-												return output;
-										} else {
-												root.setLength(0);
-										}
+                    if (flags.rootFound) {
+                        return output;
+                    } else {
+                        root.setLength(0);
+                    }
                 }
 
                 // if the word matches the pattern, get the root
                 if (input.length() - 3 <= numberSameLetters) {
                     // derive the root from the word by matching it with the pattern
-										for (int j = 0; j < input.length(); j++) {
-												if (pattern.charAt(j) == FEH ||
-																pattern.charAt(j) == AEN ||
-																pattern.charAt(j) == LAM) {
-														root.append(input.charAt(j));
-												}
-										}
+                    for (int j = 0; j < input.length(); j++) {
+                        if (pattern.charAt(j) == FEH ||
+                                pattern.charAt(j) == AEN ||
+                                pattern.charAt(j) == LAM) {
+                            root.append(input.charAt(j));
+                        }
+                    }
 
                     output = root.toString();
                     output = processThreeLetters(output, flags);
@@ -804,11 +807,11 @@ public class ArabicRootExtractorStemmer {
      * @return true if the prefix matches
      */
     boolean startsWith(char input[], char prefix[]) {
-				for (int i = 0; i < prefix.length; i++) {
-						if (input[i] != prefix[i]) {
-								return false;
-						}
-				}
+        for (int i = 0; i < prefix.length; i++) {
+            if (input[i] != prefix[i]) {
+                return false;
+            }
+        }
 
         return true;
     }
@@ -825,11 +828,11 @@ public class ArabicRootExtractorStemmer {
             return false;
         }
 
-				for (int i = 0; i < suffix.length; i++) {
-						if (input[input.length - suffix.length + i] != suffix[i]) {
-								return false;
-						}
-				}
+        for (int i = 0; i < suffix.length; i++) {
+            if (input[input.length - suffix.length + i] != suffix[i]) {
+                return false;
+            }
+        }
 
         return true;
     }
