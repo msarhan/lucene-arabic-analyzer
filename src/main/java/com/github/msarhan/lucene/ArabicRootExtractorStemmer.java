@@ -807,6 +807,9 @@ public class ArabicRootExtractorStemmer {
      * @return true if the prefix matches
      */
     boolean startsWith(char input[], char prefix[]) {
+        if (input.length < prefix.length) {
+            return false;
+        }
         for (int i = 0; i < prefix.length; i++) {
             if (input[i] != prefix[i]) {
                 return false;
