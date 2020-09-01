@@ -26,6 +26,7 @@ package com.github.msarhan.lucene;
 
 import java.io.IOException;
 import java.io.Reader;
+
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.CharArraySet;
 import org.apache.lucene.analysis.StopwordAnalyzerBase;
@@ -77,7 +78,7 @@ public final class ArabicRootExtractorAnalyzer extends StopwordAnalyzerBase {
      * this analyzer will add a {@link SetKeywordMarkerFilter} before {@link
      * ArabicRootExtractorStemmer}.
      *
-     * @param stopwords a stopword set
+     * @param stopwords        a stopword set
      * @param stemExclusionSet a set of terms not to be stemmed
      */
     public ArabicRootExtractorAnalyzer(CharArraySet stopwords, CharArraySet stemExclusionSet) {
@@ -128,7 +129,7 @@ public final class ArabicRootExtractorAnalyzer extends StopwordAnalyzerBase {
         static {
             try {
                 DEFAULT_STOP_SET = loadStopwordSet(false, ArabicRootExtractorAnalyzer.class,
-                        DEFAULT_STOPWORD_FILE, "#");
+                    DEFAULT_STOPWORD_FILE, "#");
             } catch (IOException ex) {
                 // default set should always be present as it is part of the
                 // distribution (JAR)

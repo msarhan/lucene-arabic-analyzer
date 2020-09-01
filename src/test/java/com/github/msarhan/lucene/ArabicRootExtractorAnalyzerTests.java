@@ -32,6 +32,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.util.concurrent.atomic.AtomicInteger;
+
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
@@ -66,19 +67,19 @@ public class ArabicRootExtractorAnalyzerTests {
         final AtomicInteger id = new AtomicInteger(0);
         IndexWriter w = new IndexWriter(index, config);
         URL url = ArabicRootExtractorStemmer.class.getClassLoader()
-                .getResource("com/github/msarhan/lucene/fateha.txt");
+            .getResource("com/github/msarhan/lucene/fateha.txt");
 
         if (url == null) {
             fail("Not able to load data file!");
         }
 
         Files.lines(new File(url.toURI()).toPath())
-                .forEach(line -> addDoc(w, line, String.valueOf(id.incrementAndGet())));
+            .forEach(line -> addDoc(w, line, String.valueOf(id.incrementAndGet())));
         w.close();
 
         String querystr = "راحم";
         Query q = new QueryParser("title", analyzer)
-                .parse(querystr);
+            .parse(querystr);
 
         int hitsPerPage = 10;
         IndexReader reader = DirectoryReader.open(index);
@@ -141,7 +142,7 @@ public class ArabicRootExtractorAnalyzerTests {
         //Query the index
         String queryStr = "راحم";
         Query query = new QueryParser("title", analyzer)
-                .parse(queryStr);
+            .parse(queryStr);
 
         int hitsPerPage = 5;
         IndexReader reader = DirectoryReader.open(index);

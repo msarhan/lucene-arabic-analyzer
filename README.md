@@ -1,3 +1,9 @@
+[![Build Status](https://travis-ci.com/msarhan/lucene-arabic-analyzer.svg?branch=master)](https://travis-ci.com/msarhan/lucene-arabic-analyzer)
+[![Javadoc](https://www.javadoc.io/badge/com.github.msarhan/lucene-arabic-analyzer.svg)](https://www.javadoc.io/doc/com.github.msarhan/lucene-arabic-analyzer)
+[![License](https://img.shields.io/badge/license-MIT-green.svg)](https://github.com/msarhan/lucene-arabic-analyzer/blob/master/LICENSE)
+[![Hits-of-Code](https://hitsofcode.com/github/msarhan/lucene-arabic-analyzer?branch=master)](https://hitsofcode.com/view/github/msarhan/lucene-arabic-analyzer?branch=master)
+[![Maven Central](https://img.shields.io/maven-central/v/com.github.msarhan/lucene-arabic-analyzer.svg)](https://maven-badges.herokuapp.com/maven-central/com.github.msarhan/lucene-arabic-analyzer)
+
 # lucene-arabic-analyzer
 Apache Lucene analyzer for Arabic language with root based stemmer.
 
@@ -16,19 +22,10 @@ This way, documents will be indexed depending on its words roots, so, when you w
 **Maven**
 ```xml
 <dependency>
-	<groupId>com.github.msarhan</groupId>
-	<artifactId>lucene-arabic-analyzer</artifactId>
-	<version>1.1.0</version>
+  <groupId>com.github.msarhan</groupId>
+  <artifactId>lucene-arabic-analyzer</artifactId>
+  <version>1.3.0</version>
 </dependency>
-```
-**Gradle**
-```gradle
-repositories {
-	mavenCentral()
-}
-dependencies {
-	compile group: 'com.github.msarhan', name: 'lucene-arabic-analyzer', version:'1.1.0'
-}
 ```
 
 ## Usage
@@ -60,7 +57,7 @@ writer.close();
 //Query the index
 String queryStr = "راحم";
 Query query = new QueryParser("title", analyzer)
-		.parse(queryStr);
+    .parse(queryStr);
 
 int hitsPerPage = 5;
 IndexReader reader = DirectoryReader.open(index);
@@ -73,15 +70,15 @@ ScoreDoc[] hits = docs.scoreDocs;
 //Print results
 System.out.println("Found " + hits.length + " hits:");
 for (ScoreDoc hit : hits) {
-	int docId = hit.doc;
-	Document d = searcher.doc(docId);
-	System.out.printf("\t(%s): %s\n", d.get("number"), d.get("title"));
+    int docId = hit.doc;
+    Document d = searcher.doc(docId);
+    System.out.printf("\t(%s): %s\n", d.get("number"), d.get("title"));
 }
 /*
-	This will print:
-	Found 2 hits:
-		(1): بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيمِ
-		(3): الرَّحْمَنِ الرَّحِيمِ
+  This will print:
+  Found 2 hits:
+    (1): بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيمِ
+    (3): الرَّحْمَنِ الرَّحِيمِ
  */
 //~
 ```

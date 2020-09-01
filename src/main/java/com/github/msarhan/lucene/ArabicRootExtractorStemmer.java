@@ -24,16 +24,16 @@
 
 package com.github.msarhan.lucene;
 
-import static org.apache.lucene.analysis.util.StemmerUtil.delete;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
+import static org.apache.lucene.analysis.util.StemmerUtil.delete;
 
 /**
  * Stemmer for Arabic language based on <a target="_blank" href="http://zeus.cs.pacificu.edu/shereen/research.htm#stemming">Khoja's
@@ -84,57 +84,57 @@ public class ArabicRootExtractorStemmer {
     public static final char SHADDA = '\u0651';
     public static final char SUKUN = '\u0652';
 
-    public static final char definite_article[][] = {
-            new char[]{FEH, ALEF, LAM},
-            new char[]{KAF, ALEF, LAM},
-            new char[]{BEH, ALEF, LAM},
-            new char[]{WAW, ALEF, LAM},
-            new char[]{ALEF, LAM}
+    public static final char[][] definite_article = {
+        new char[]{FEH, ALEF, LAM},
+        new char[]{KAF, ALEF, LAM},
+        new char[]{BEH, ALEF, LAM},
+        new char[]{WAW, ALEF, LAM},
+        new char[]{ALEF, LAM}
     };
 
-    public static final char prefixes[][] = {
-            new char[]{LAM, LAM},
-            new char[]{LAM},
-            new char[]{ALEF},
-            new char[]{WAW},
-            new char[]{SEEN},
-            new char[]{BEH},
-            new char[]{YEH},
-            new char[]{NOON},
-            new char[]{MEEM},
-            new char[]{TEH},
-            new char[]{FEH}
+    public static final char[][] prefixes = {
+        new char[]{LAM, LAM},
+        new char[]{LAM},
+        new char[]{ALEF},
+        new char[]{WAW},
+        new char[]{SEEN},
+        new char[]{BEH},
+        new char[]{YEH},
+        new char[]{NOON},
+        new char[]{MEEM},
+        new char[]{TEH},
+        new char[]{FEH}
     };
 
-    public static final char suffixes[][] = {
-            new char[]{HEH, MEEM, ALEF},
-            new char[]{TEH, MEEM, ALEF},
-            new char[]{KAF, MEEM, ALEF},
-            new char[]{ALEF, NOON},
-            new char[]{HEH, ALEF},
-            new char[]{WAW, ALEF},
-            new char[]{TEH, MEEM},
-            new char[]{KAF, MEEM},
-            new char[]{TEH, NOON},
-            new char[]{KAF, NOON},
-            new char[]{NOON, ALEF},
-            new char[]{TEH, ALEF},
-            new char[]{TEH, ALEF},
-            new char[]{WAW, NOON},
-            new char[]{YEH, NOON},
-            new char[]{HEH, NOON},
-            new char[]{HEH, MEEM},
-            new char[]{TEH, HEH},
-            new char[]{TEH, YEH},
-            new char[]{NOON, YEH},
-            new char[]{NOON},
-            new char[]{KAF},
-            new char[]{HEH},
-            new char[]{TEH_MARBUTA},
-            new char[]{TEH},
-            new char[]{ALEF},
-            new char[]{YEH},
-            new char[]{ALEF, TEH}
+    public static final char[][] suffixes = {
+        new char[]{HEH, MEEM, ALEF},
+        new char[]{TEH, MEEM, ALEF},
+        new char[]{KAF, MEEM, ALEF},
+        new char[]{ALEF, NOON},
+        new char[]{HEH, ALEF},
+        new char[]{WAW, ALEF},
+        new char[]{TEH, MEEM},
+        new char[]{KAF, MEEM},
+        new char[]{TEH, NOON},
+        new char[]{KAF, NOON},
+        new char[]{NOON, ALEF},
+        new char[]{TEH, ALEF},
+        new char[]{TEH, ALEF},
+        new char[]{WAW, NOON},
+        new char[]{YEH, NOON},
+        new char[]{HEH, NOON},
+        new char[]{HEH, MEEM},
+        new char[]{TEH, HEH},
+        new char[]{TEH, YEH},
+        new char[]{NOON, YEH},
+        new char[]{NOON},
+        new char[]{KAF},
+        new char[]{HEH},
+        new char[]{TEH_MARBUTA},
+        new char[]{TEH},
+        new char[]{ALEF},
+        new char[]{YEH},
+        new char[]{ALEF, TEH}
     };
 
     private static List<String> stopwords;
@@ -179,14 +179,13 @@ public class ArabicRootExtractorStemmer {
         final List<String> words = new ArrayList<>();
 
         InputStream input = ArabicRootExtractorStemmer.class.getClassLoader()
-                .getResourceAsStream("com/github/msarhan/lucene/" + fileName);
+            .getResourceAsStream("com/github/msarhan/lucene/" + fileName);
         if (input != null) {
-            BufferedReader reader = new BufferedReader(new InputStreamReader(input, Charset.forName(
-                    "utf8")));
+            BufferedReader reader = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8));
             reader.lines()
-                    .map(line -> line.trim().split("\\s+"))
-                    .map(Arrays::stream)
-                    .forEach(stringStream -> stringStream.forEach(words::add));
+                .map(line -> line.trim().split("\\s+"))
+                .map(Arrays::stream)
+                .forEach(stringStream -> stringStream.forEach(words::add));
             try {
                 input.close();
             } catch (IOException e) {
@@ -426,7 +425,7 @@ public class ArabicRootExtractorStemmer {
             // if the definite article was found
             if (startsWith(input.toCharArray(), definiteArticle)) {
                 // remove the definite article
-                output = input.substring(definiteArticle.length, input.length());
+                output = input.substring(definiteArticle.length);
 
                 // check to see if the word is a stopword
                 if (checkStopwords(output, flags)) {
@@ -510,7 +509,7 @@ public class ArabicRootExtractorStemmer {
         // then change it to a 'Ã'
         if (input.length() > 0) {
             if (input.charAt(0) == ALEF || input.charAt(0) == WAW_HAMZA
-                    || input.charAt(0) == YEH_HAMZA) {
+                || input.charAt(0) == YEH_HAMZA) {
                 output.setLength(0);
                 output.append(ALEF_HAMZA_ABOVE);
                 output.append(input.substring(1));
@@ -520,8 +519,8 @@ public class ArabicRootExtractorStemmer {
             // if the last letter is a weak letter or a hamza
             // then remove it and check for last weak letters
             if (input.charAt(2) == WAW || input.charAt(2) == YEH || input.charAt(2) == ALEF ||
-                    input.charAt(2) == YEH_MAKSORAH || input.charAt(2) == HAMZA
-                    || input.charAt(2) == YEH_HAMZA) {
+                input.charAt(2) == YEH_MAKSORAH || input.charAt(2) == HAMZA
+                || input.charAt(2) == YEH_HAMZA) {
                 root = input.substring(0, 2);
                 root = lastWeak(root, flags);
                 if (flags.rootFound) {
@@ -532,7 +531,7 @@ public class ArabicRootExtractorStemmer {
             // if the second letter is a weak letter or a hamza
             // then remove it
             if (input.charAt(1) == WAW || input.charAt(1) == YEH || input.charAt(1) == ALEF
-                    || input.charAt(1) == YEH_HAMZA) {
+                || input.charAt(1) == YEH_HAMZA) {
                 root = input.substring(0, 1);
                 root = root + input.substring(2);
 
@@ -593,7 +592,7 @@ public class ArabicRootExtractorStemmer {
         // if the first letter is a hamza, change it to an alif
         if (input.length() > 0) {
             if (input.charAt(0) == ALEF_HAMZA_ABOVE || input.charAt(0) == ALEF_HAMZA_BELOW
-                    || input.charAt(0) == ALEF_MADDA) {
+                || input.charAt(0) == ALEF_MADDA) {
                 root.append("j");
                 root.setCharAt(0, ALEF);
                 root.append(input.substring(1));
@@ -617,16 +616,16 @@ public class ArabicRootExtractorStemmer {
                 // so long as they're not a fa, ain, or lam
                 for (int j = 0; j < input.length(); j++) {
                     if (pattern.charAt(j) == input.charAt(j) &&
-                            pattern.charAt(j) != FEH &&
-                            pattern.charAt(j) != AEN &&
-                            pattern.charAt(j) != LAM) {
+                        pattern.charAt(j) != FEH &&
+                        pattern.charAt(j) != AEN &&
+                        pattern.charAt(j) != LAM) {
                         numberSameLetters++;
                     }
                 }
 
                 // test to see if the word matches the pattern ÇÝÚáÇ
                 if (input.length() == 6 && input.charAt(3) == input.charAt(5)
-                        && numberSameLetters == 2) {
+                    && numberSameLetters == 2) {
                     root.append(input.charAt(1));
                     root.append(input.charAt(2));
                     root.append(input.charAt(3));
@@ -644,8 +643,8 @@ public class ArabicRootExtractorStemmer {
                     // derive the root from the word by matching it with the pattern
                     for (int j = 0; j < input.length(); j++) {
                         if (pattern.charAt(j) == FEH ||
-                                pattern.charAt(j) == AEN ||
-                                pattern.charAt(j) == LAM) {
+                            pattern.charAt(j) == AEN ||
+                            pattern.charAt(j) == LAM) {
                             root.append(input.charAt(j));
                         }
                     }
@@ -775,7 +774,7 @@ public class ArabicRootExtractorStemmer {
      * @return input string after normalization
      */
     public String normalize(String input) {
-        char s[] = input.toCharArray();
+        char[] s = input.toCharArray();
         int len = s.length;
 
         for (int i = 0; i < len; i++) {
@@ -802,11 +801,11 @@ public class ArabicRootExtractorStemmer {
     /**
      * Returns true if the prefix matches
      *
-     * @param input input buffer
+     * @param input  input buffer
      * @param prefix prefix to check
      * @return true if the prefix matches
      */
-    boolean startsWith(char input[], char prefix[]) {
+    boolean startsWith(char[] input, char[] prefix) {
         if (input.length < prefix.length) {
             return false;
         }
@@ -822,11 +821,11 @@ public class ArabicRootExtractorStemmer {
     /**
      * Returns true if the suffix matches
      *
-     * @param input input buffer
+     * @param input  input buffer
      * @param suffix suffix to check
      * @return true if the suffix matches
      */
-    boolean endsWith(char input[], char suffix[]) {
+    boolean endsWith(char[] input, char[] suffix) {
         if (input.length < suffix.length) {
             return false;
         }
