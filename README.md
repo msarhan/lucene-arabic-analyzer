@@ -24,7 +24,7 @@ This way, documents will be indexed depending on its words roots, so, when you w
 <dependency>
   <groupId>com.github.msarhan</groupId>
   <artifactId>lucene-arabic-analyzer</artifactId>
-  <version>1.3.0</version>
+  <version>1.4.0</version>
 </dependency>
 ```
 
