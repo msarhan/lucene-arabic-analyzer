@@ -1,8 +1,8 @@
 [![Build Status](https://travis-ci.com/msarhan/lucene-arabic-analyzer.svg?branch=master)](https://travis-ci.com/msarhan/lucene-arabic-analyzer)
 [![Javadoc](https://www.javadoc.io/badge/com.github.msarhan/lucene-arabic-analyzer.svg)](https://www.javadoc.io/doc/com.github.msarhan/lucene-arabic-analyzer)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](https://github.com/msarhan/lucene-arabic-analyzer/blob/master/LICENSE)
-[![Hits-of-Code](https://hitsofcode.com/github/msarhan/lucene-arabic-analyzer?branch=master)](https://hitsofcode.com/view/github/msarhan/lucene-arabic-analyzer?branch=master)
 [![Maven Central](https://img.shields.io/maven-central/v/com.github.msarhan/lucene-arabic-analyzer.svg)](https://maven-badges.herokuapp.com/maven-central/com.github.msarhan/lucene-arabic-analyzer)
+[![Apache Lucene](https://img.shields.io/badge/Apache%20Lucene-8.2.x-green)](https://lucene.apache.org/core/8_8_2/index.html)
 
 # lucene-arabic-analyzer
 Apache Lucene analyzer for Arabic language with root based stemmer.
