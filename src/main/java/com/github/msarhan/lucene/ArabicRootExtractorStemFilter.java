@@ -24,13 +24,13 @@
 
 package com.github.msarhan.lucene;
 
-import java.io.IOException;
-
 import org.apache.lucene.analysis.TokenFilter;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.miscellaneous.SetKeywordMarkerFilter;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import org.apache.lucene.analysis.tokenattributes.KeywordAttribute;
+
+import java.io.IOException;
 
 /**
  * A {@link TokenFilter} that applies {@link ArabicRootExtractorStemmer}. <p> To prevent terms from
@@ -55,10 +55,11 @@ public final class ArabicRootExtractorStemFilter extends TokenFilter {
         if (input.incrementToken()) {
             if (!keywordAttr.isKeyword()) {
                 final String term = termAtt.toString();
-                final String stemmed = stemmer.stem(term);
-                if ((stemmed != null) && !stemmed.equals(term)) {
-                    termAtt.setEmpty().append(stemmed);
-                }
+                stemmer.stem(term).forEach(root -> {
+                    if (!"#".equals(root) && !term.equals(root)) {
+                        termAtt.setEmpty().append(root);
+                    }
+                });
             }
             return true;
         } else {

@@ -7,8 +7,9 @@
 # lucene-arabic-analyzer
 Apache Lucene analyzer for Arabic language with root based stemmer.
 
-Stemming algorithms are used in information retrieval systems, text classifiers, indexers and text mining to extract roots of different words, so that words derived from the same stem or root are grouped together. Many stemming algorithms were built in different natural languages.
-This implementation is based on [Khoja stemmer](http://zeus.cs.pacificu.edu/shereen/research.htm#stemming) which is one of the widely used Arabic stemmers.
+Stemming algorithms are used in information retrieval systems, text classifiers, indexers and text mining to extract roots of different words, so that words derived from the same stem or root are grouped together.
+- Version `2.x` is based on [Alkhlil Morpho System](https://ossl.alecso.org/affich_oso_details.php).
+- Version `1.x` is based on [Khoja stemmer](http://zeus.cs.pacificu.edu/shereen/research.htm#stemming).
 
 `ArabicRootExtractorAnalyzer` is responsible to do the following:
 
@@ -24,7 +25,7 @@ This way, documents will be indexed depending on its words roots, so, when you w
 <dependency>
   <groupId>com.github.msarhan</groupId>
   <artifactId>lucene-arabic-analyzer</artifactId>
-  <version>1.4.0</version>
+  <version>[VERSION]</version>
 </dependency>
 ```
 
@@ -74,12 +75,6 @@ for (ScoreDoc hit : hits) {
     Document d = searcher.doc(docId);
     System.out.printf("\t(%s): %s\n", d.get("number"), d.get("title"));
 }
-/*
-  This will print:
-  Found 2 hits:
-    (1): بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيمِ
-    (3): الرَّحْمَنِ الرَّحِيمِ
- */
 //~
 ```
 
@@ -87,18 +82,17 @@ for (ScoreDoc hit : hits) {
 ```java
 ArabicRootExtractorStemmer stemmer = new ArabicRootExtractorStemmer();
 
-assertEquals("رحم", stemmer.stem("الرَّحْمَنِ"));
-assertEquals("رحم", stemmer.stem("الرَّحِيمِ"));
-assertEquals("علم", stemmer.stem("الْعَالَمِينَ"));
-assertEquals("عبد", stemmer.stem("نَعْبُدُ"));
-assertEquals("أمن", stemmer.stem("الْمُؤْمِنِينَ"));
-assertEquals("صلح", stemmer.stem("الصَّالِحَاتِ"));
-assertEquals("فلح", stemmer.stem("تُفْلِحُوا"));
-assertEquals("نزع", stemmer.stem("يَتَنَازَعُونَ"));
-assertEquals("شرب", stemmer.stem("الشَّرَابُ"));
-assertEquals("غفل", stemmer.stem("أَغْفَلْنَا"));
-assertEquals("قلب", stemmer.stem("مُنقَلَبًا"));
-assertEquals("بقي", stemmer.stem("وَالْبَاقِيَاتُ"));
-assertEquals("جرم", stemmer.stem("الْمُجْرِمِينَ"));
-assertEquals("ظلم", stemmer.stem("لِلظَّالِمِينَ"));
+assertTrue(stemmer.stem("الرَّحْمَنِ").stream().anyMatch(s -> s.equals("رحم")));
+assertTrue(stemmer.stem("الْعَالَمِينَ").stream().anyMatch(s -> s.equals("علم")));
+assertTrue(stemmer.stem("الْمُؤْمِنِينَ").stream().anyMatch(s -> s.equals("ءمن")));
+assertTrue(stemmer.stem("يَتَنَازَعُونَ").stream().anyMatch(s -> s.equals("نزع")));
+```
+
+## Building
+```bash
+# Install AlKhalil jar files in your local maven repository
+cd alkhalil && ./maven-install.sh
+
+# The resulting jar file will include Alkhalil dependencies
+mvn package
 ```

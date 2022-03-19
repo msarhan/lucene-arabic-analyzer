@@ -24,20 +24,15 @@
 
 package com.github.msarhan.lucene;
 
-import java.io.IOException;
-import java.io.Reader;
-
-import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.analysis.CharArraySet;
-import org.apache.lucene.analysis.StopwordAnalyzerBase;
-import org.apache.lucene.analysis.TokenStream;
-import org.apache.lucene.analysis.Tokenizer;
-import org.apache.lucene.analysis.ar.ArabicNormalizationFilter;
+import org.apache.lucene.analysis.*;
 import org.apache.lucene.analysis.core.DecimalDigitFilter;
 import org.apache.lucene.analysis.core.LowerCaseFilter;
 import org.apache.lucene.analysis.core.StopFilter;
 import org.apache.lucene.analysis.miscellaneous.SetKeywordMarkerFilter;
 import org.apache.lucene.analysis.standard.StandardTokenizer;
+
+import java.io.IOException;
+import java.io.Reader;
 
 /**
  * {@link Analyzer} for Arabic language. <p> This analyzer implements root-based stemmer to extract
@@ -110,8 +105,6 @@ public final class ArabicRootExtractorAnalyzer extends StopwordAnalyzerBase {
         result = new DecimalDigitFilter(result);
         // the order here is important: the stopword list is not normalized!
         result = new org.apache.lucene.analysis.StopFilter(result, stopwords);
-        // TODO maybe we should make ArabicNormalization filter also KeywordAttribute aware?!
-        result = new ArabicNormalizationFilter(result);
         if (!stemExclusionSet.isEmpty()) {
             result = new SetKeywordMarkerFilter(result, stemExclusionSet);
         }

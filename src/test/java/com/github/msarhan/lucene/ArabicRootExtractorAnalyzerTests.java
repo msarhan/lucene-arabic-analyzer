@@ -23,16 +23,6 @@
  */
 package com.github.msarhan.lucene;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
-
-import java.io.File;
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.nio.file.Files;
-import java.util.concurrent.atomic.AtomicInteger;
-
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
@@ -44,14 +34,21 @@ import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.queryparser.classic.QueryParser;
-import org.apache.lucene.search.IndexSearcher;
-import org.apache.lucene.search.Query;
-import org.apache.lucene.search.ScoreDoc;
-import org.apache.lucene.search.Sort;
-import org.apache.lucene.search.TopDocs;
+import org.apache.lucene.search.*;
 import org.apache.lucene.store.Directory;
+import org.apache.lucene.store.MMapDirectory;
 import org.apache.lucene.store.RAMDirectory;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
+
+import java.io.File;
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * @author Mouaffak A. Sarhan &lt;mouffaksarhan@gmail.com&gt;
@@ -59,8 +56,8 @@ import org.junit.Test;
 public class ArabicRootExtractorAnalyzerTests {
 
     @Test
-    public void testArabicRootIndex() throws IOException, ParseException, URISyntaxException {
-        Directory index = new RAMDirectory();
+    public void testArabicRootIndex(@TempDir Path tempDir) throws IOException, ParseException, URISyntaxException {
+        Directory index = new MMapDirectory(tempDir);
         ArabicRootExtractorAnalyzer analyzer = new ArabicRootExtractorAnalyzer();
         IndexWriterConfig config = new IndexWriterConfig(analyzer);
 
@@ -70,7 +67,7 @@ public class ArabicRootExtractorAnalyzerTests {
             .getResource("com/github/msarhan/lucene/fateha.txt");
 
         if (url == null) {
-            fail("Not able to load data file!");
+            Assertions.fail("Not able to load data file!");
         }
 
         Files.lines(new File(url.toURI()).toPath())
@@ -88,7 +85,7 @@ public class ArabicRootExtractorAnalyzerTests {
 
         //print(searcher, docs);
 
-        assertEquals(2, docs.scoreDocs.length);
+        Assertions.assertEquals(2, docs.scoreDocs.length);
     }
 
     private void addDoc(IndexWriter w, String title, String number) {
@@ -115,7 +112,6 @@ public class ArabicRootExtractorAnalyzerTests {
 
     @Test
     public void testInlineStemmer() throws IOException, ParseException {
-
         //Initialize the index
         Directory index = new RAMDirectory();
         Analyzer analyzer = new ArabicRootExtractorAnalyzer();
@@ -143,26 +139,21 @@ public class ArabicRootExtractorAnalyzerTests {
         String queryStr = "راحم";
         Query query = new QueryParser("title", analyzer)
             .parse(queryStr);
-
         int hitsPerPage = 5;
         IndexReader reader = DirectoryReader.open(index);
         IndexSearcher searcher = new IndexSearcher(reader);
         TopDocs docs = searcher.search(query, hitsPerPage, Sort.INDEXORDER);
-
         ScoreDoc[] hits = docs.scoreDocs;
         //~
 
-        //Print results
-    /*
-    System.out.println("Found " + hits.length + " hits:");
+        /*
+        System.out.println("Found " + hits.length + " hits:");
 		for (ScoreDoc hit : hits) {
 			int docId = hit.doc;
 			Document d = searcher.doc(docId);
 			System.out.printf("\t(%s): %s\n", d.get("number"), d.get("title"));
 		}
 		*/
-        //~
-
     }
 
 }
