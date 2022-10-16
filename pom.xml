@@ -6,7 +6,7 @@
 
   <groupId>com.github.msarhan</groupId>
   <artifactId>lucene-arabic-analyzer</artifactId>
-  <version>2.0.0</version>
+  <version>2.0.1</version>
   <packaging>jar</packaging>
   <name>${project.groupId}:${project.artifactId}</name>
   <description>Apache Lucene analyzer for Arabic language with root based stemmer.</description>
@@ -36,7 +36,7 @@
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
     <lucene.version>8.11.1</lucene.version>
-    <junit.version>5.8.2</junit.version>
+    <junit.version>5.9.0</junit.version>
   </properties>
 
   <dependencies>
@@ -167,23 +167,22 @@
         </executions>
       </plugin>
       <plugin>
-        <artifactId>maven-assembly-plugin</artifactId>
-        <configuration>
-          <appendAssemblyId>false</appendAssemblyId>
-          <descriptorRefs>
-            <descriptorRef>jar-with-dependencies</descriptorRef>
-          </descriptorRefs>
-        </configuration>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-shade-plugin</artifactId>
+        <version>3.4.0</version>
         <executions>
           <execution>
-            <id>assembly</id>
             <phase>package</phase>
             <goals>
-              <goal>single</goal>
+              <goal>shade</goal>
             </goals>
+            <configuration>
+              <useDependencyReducedPomInJar>true</useDependencyReducedPomInJar>
+            </configuration>
           </execution>
         </executions>
       </plugin>
+
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-javadoc-plugin</artifactId>
