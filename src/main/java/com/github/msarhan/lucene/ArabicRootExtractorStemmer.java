@@ -28,8 +28,7 @@ import AlKhalil2.morphology.analyzer.AnalyzerTokens;
 import AlKhalil2.morphology.result.model.Result;
 import AlKhalil2.util.Settings;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 /**
  * Factory for {@link ArabicRootExtractorStemFilter}.
@@ -38,9 +37,9 @@ import java.util.List;
  */
 public class ArabicRootExtractorStemmer {
 
-    public List<String> stem(String token) {
+    public Set<String> stem(String token) {
         final AnalyzerTokens analyzerTokens = new AnalyzerTokens();
-        List<String> roots = new ArrayList<>(1);
+        Set<String> roots = new LinkedHashSet<>(1);
         for (Object o : analyzerTokens.analyzerToken(token)) {
             Result res = (Result) o;
             roots.add(!"#".equals(res.getRoot()) ? res.getRoot() : res.getStem());

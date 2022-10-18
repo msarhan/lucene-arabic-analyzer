@@ -29,8 +29,13 @@ import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.miscellaneous.SetKeywordMarkerFilter;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import org.apache.lucene.analysis.tokenattributes.KeywordAttribute;
+import org.apache.lucene.analysis.tokenattributes.PositionIncrementAttribute;
+import org.apache.lucene.util.CharsRef;
+import org.apache.lucene.util.CharsRefBuilder;
 
 import java.io.IOException;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * A {@link TokenFilter} that applies {@link ArabicRootExtractorStemmer}. <p> To prevent terms from
@@ -42,9 +47,12 @@ import java.io.IOException;
  */
 public final class ArabicRootExtractorStemFilter extends TokenFilter {
 
-    private final ArabicRootExtractorStemmer stemmer = new ArabicRootExtractorStemmer();
     private final CharTermAttribute termAtt = addAttribute(CharTermAttribute.class);
+    private final PositionIncrementAttribute posIncAtt = addAttribute(PositionIncrementAttribute.class);
     private final KeywordAttribute keywordAttr = addAttribute(KeywordAttribute.class);
+    private final ArabicRootExtractorStemmer stemmer = new ArabicRootExtractorStemmer();
+    private List<CharsRef> buffer;
+    private State savedState;
 
     public ArabicRootExtractorStemFilter(TokenStream input) {
         super(input);
@@ -52,19 +60,38 @@ public final class ArabicRootExtractorStemFilter extends TokenFilter {
 
     @Override
     public boolean incrementToken() throws IOException {
-        if (input.incrementToken()) {
-            if (!keywordAttr.isKeyword()) {
-                final String term = termAtt.toString();
-                stemmer.stem(term).forEach(root -> {
-                    if (!"#".equals(root) && !term.equals(root)) {
-                        termAtt.setEmpty().append(root);
-                    }
-                });
-            }
+        if (buffer != null && !buffer.isEmpty()) {
+            CharsRef nextStem = buffer.remove(0);
+            restoreState(savedState);
+            posIncAtt.setPositionIncrement(0);
+            termAtt.setEmpty().append(nextStem);
             return true;
-        } else {
+        }
+
+        if (!input.incrementToken()) {
             return false;
         }
-    }
 
+        if (keywordAttr.isKeyword()) {
+            return true;
+        }
+
+        buffer = this.stemmer.stem(termAtt.toString())
+            .stream()
+            .map(root -> new CharsRefBuilder().append(root).get())
+            .collect(Collectors.toList());
+
+        if (buffer.isEmpty()) { // we do not know this word, return it unchanged
+            return true;
+        }
+
+        CharsRef stem = buffer.remove(0);
+        termAtt.setEmpty().append(stem);
+
+        if (!buffer.isEmpty()) {
+            savedState = captureState();
+        }
+
+        return true;
+    }
 }

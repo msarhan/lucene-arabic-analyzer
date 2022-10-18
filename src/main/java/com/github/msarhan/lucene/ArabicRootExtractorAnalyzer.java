@@ -50,6 +50,7 @@ public final class ArabicRootExtractorAnalyzer extends StopwordAnalyzerBase {
      * http://members.unine.ch/jacques.savoy/clef/index.html The stopword list is BSD-Licensed.
      */
     public final static String DEFAULT_STOPWORD_FILE = "stopwords.txt";
+
     private final CharArraySet stemExclusionSet;
 
     /**
@@ -101,14 +102,15 @@ public final class ArabicRootExtractorAnalyzer extends StopwordAnalyzerBase {
     @Override
     protected TokenStreamComponents createComponents(String fieldName) {
         final Tokenizer source = new StandardTokenizer();
-        TokenStream result = new org.apache.lucene.analysis.LowerCaseFilter(source);
+        TokenStream result = new LowerCaseFilter(source);
         result = new DecimalDigitFilter(result);
-        // the order here is important: the stopword list is not normalized!
-        result = new org.apache.lucene.analysis.StopFilter(result, stopwords);
+        result = new ArabicNormalizationFilter(result);
+        result = new StopFilter(result, stopwords);
         if (!stemExclusionSet.isEmpty()) {
             result = new SetKeywordMarkerFilter(result, stemExclusionSet);
         }
-        return new TokenStreamComponents(source, new ArabicRootExtractorStemFilter(result));
+        result = new ArabicRootExtractorStemFilter(result);
+        return new TokenStreamComponents(source, result);
     }
 
     /**

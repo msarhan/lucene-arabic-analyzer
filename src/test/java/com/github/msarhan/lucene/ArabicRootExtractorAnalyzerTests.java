@@ -24,6 +24,8 @@
 package com.github.msarhan.lucene;
 
 import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.analysis.TokenStream;
+import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.StringField;
@@ -32,23 +34,23 @@ import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
-import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.queryparser.classic.QueryParser;
-import org.apache.lucene.search.*;
+import org.apache.lucene.search.IndexSearcher;
+import org.apache.lucene.search.Sort;
+import org.apache.lucene.search.TopFieldDocs;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.MMapDirectory;
-import org.apache.lucene.store.RAMDirectory;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
-import java.io.File;
 import java.io.IOException;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * @author Mouaffak A. Sarhan &lt;mouffaksarhan@gmail.com&gt;
@@ -56,104 +58,85 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class ArabicRootExtractorAnalyzerTests {
 
     @Test
-    public void testArabicRootIndex(@TempDir Path tempDir) throws IOException, ParseException, URISyntaxException {
-        Directory index = new MMapDirectory(tempDir);
-        ArabicRootExtractorAnalyzer analyzer = new ArabicRootExtractorAnalyzer();
-        IndexWriterConfig config = new IndexWriterConfig(analyzer);
-
-        final AtomicInteger id = new AtomicInteger(0);
-        IndexWriter w = new IndexWriter(index, config);
-        URL url = ArabicRootExtractorStemmer.class.getClassLoader()
-            .getResource("com/github/msarhan/lucene/fateha.txt");
-
-        if (url == null) {
-            Assertions.fail("Not able to load data file!");
-        }
-
-        Files.lines(new File(url.toURI()).toPath())
-            .forEach(line -> addDoc(w, line, String.valueOf(id.incrementAndGet())));
-        w.close();
-
-        String querystr = "راحم";
-        Query q = new QueryParser("title", analyzer)
-            .parse(querystr);
-
-        int hitsPerPage = 10;
-        IndexReader reader = DirectoryReader.open(index);
-        IndexSearcher searcher = new IndexSearcher(reader);
-        TopDocs docs = searcher.search(q, hitsPerPage);
-
-        //print(searcher, docs);
-
-        Assertions.assertEquals(2, docs.scoreDocs.length);
-    }
-
-    private void addDoc(IndexWriter w, String title, String number) {
-        Document doc = new Document();
-        doc.add(new TextField("title", title, Field.Store.YES));
-        doc.add(new StringField("number", number, Field.Store.YES));
-        try {
-            w.addDocument(doc);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private void print(IndexSearcher searcher, TopDocs docs) throws IOException {
-        ScoreDoc[] hits = docs.scoreDocs;
-
-        System.out.println("Found " + hits.length + " hits.");
-        for (ScoreDoc hit : hits) {
-            int docId = hit.doc;
-            Document d = searcher.doc(docId);
-            System.out.println(d.get("number") + "\t" + d.get("title"));
-        }
+    public void searchUsingVerb() throws Exception {
+        TopFieldDocs result = search("كتب");
+        Assertions.assertEquals(1, result.totalHits.value);
+        result = search("قال");
+        Assertions.assertEquals(2, result.totalHits.value);
     }
 
     @Test
-    public void testInlineStemmer() throws IOException, ParseException {
-        //Initialize the index
-        Directory index = new RAMDirectory();
+    public void searchUsingNoun() throws Exception {
+        TopFieldDocs result = search("صالح");
+        Assertions.assertEquals(1, result.totalHits.value);
+
+        result = search("أب");
+        Assertions.assertEquals(1, result.totalHits.value);
+    }
+
+    @Test
+    public void analyze() throws IOException {
+        Assertions.assertIterableEquals(
+            Arrays.asList("رحم", "رحم"),
+            analyze("الرَّحْمَنِ الرَّحِيمِ")
+        );
+
+        Assertions.assertIterableEquals(
+            Arrays.asList("مكث", "بدو", "ءبد", "بدد"),
+            analyze("مَاكِثِينَ فِيهِ أَبَدًا")
+        );
+    }
+
+    private @TempDir Path tempDir;
+    private Directory index;
+    private IndexSearcher searcher;
+    private QueryParser parser;
+
+    private TopFieldDocs search(String query) throws Exception {
+        return this.searcher.search(this.parser.parse(query), 100, Sort.INDEXORDER);
+    }
+
+    private static List<String> analyze(String text) throws IOException {
+        List<String> result = new ArrayList<>();
+        TokenStream tokenStream = new ArabicRootExtractorAnalyzer().tokenStream("title", text);
+        CharTermAttribute attr = tokenStream.addAttribute(CharTermAttribute.class);
+        tokenStream.reset();
+        while (tokenStream.incrementToken()) {
+            result.add(attr.toString());
+        }
+        return result;
+    }
+
+    @BeforeEach
+    void init() throws Exception {
+        index = new MMapDirectory(tempDir);
         Analyzer analyzer = new ArabicRootExtractorAnalyzer();
         IndexWriterConfig config = new IndexWriterConfig(analyzer);
         IndexWriter writer = new IndexWriter(index, config);
 
-        Document doc = new Document();
-        doc.add(new StringField("number", "1", Field.Store.YES));
-        doc.add(new TextField("title", "بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيمِ", Field.Store.YES));
-        writer.addDocument(doc);
+        final List<String> input = Arrays.asList(
+            "الْحَمْدُ لِلَّهِ الَّذِي أَنْزَلَ عَلَى عَبْدِهِ الْكِتَابَ وَلَمْ يَجْعَلْ لَهُ عِوَجًا",
+            "قَيِّمًا لِيُنْذِرَ بَأْسًا شَدِيدًا مِنْ لَدُنْهُ وَيُبَشِّرَ الْمُؤْمِنِينَ الَّذِينَ يَعْمَلُونَ الصَّالِحَاتِ أَنَّ لَهُمْ أَجْرًا حَسَنًا",
+            "مَاكِثِينَ فِيهِ أَبَدًا",
+            "وَيُنْذِرَ الَّذِينَ قَالُوا اتَّخَذَ اللَّهُ وَلَدًا",
+            "مَا لَهُمْ بِهِ مِنْ عِلْمٍ وَلَا لِآبَائِهِمْ كَبُرَتْ كَلِمَةً تَخْرُجُ مِنْ أَفْوَاهِهِمْ إِنْ يَقُولُونَ إِلَّا كَذِبًا"
+        );
 
-        doc = new Document();
-        doc.add(new StringField("number", "2", Field.Store.YES));
-        doc.add(new TextField("title", "الْحَمْدُ لِلَّهِ رَبِّ الْعَالَمِينَ", Field.Store.YES));
-        writer.addDocument(doc);
-
-        doc = new Document();
-        doc.add(new StringField("number", "3", Field.Store.YES));
-        doc.add(new TextField("title", "الرَّحْمَنِ الرَّحِيمِ", Field.Store.YES));
-        writer.addDocument(doc);
+        for (String text : input) {
+            Document doc = new Document();
+            doc.add(new StringField("number", String.valueOf(System.currentTimeMillis()), Field.Store.YES));
+            doc.add(new TextField("text", text, Field.Store.YES));
+            writer.addDocument(doc);
+        }
         writer.close();
-        //~
 
-        //Query the index
-        String queryStr = "راحم";
-        Query query = new QueryParser("title", analyzer)
-            .parse(queryStr);
-        int hitsPerPage = 5;
+        this.parser = new QueryParser("text", new ArabicRootExtractorAnalyzer());
         IndexReader reader = DirectoryReader.open(index);
-        IndexSearcher searcher = new IndexSearcher(reader);
-        TopDocs docs = searcher.search(query, hitsPerPage, Sort.INDEXORDER);
-        ScoreDoc[] hits = docs.scoreDocs;
-        //~
-
-        /*
-        System.out.println("Found " + hits.length + " hits:");
-		for (ScoreDoc hit : hits) {
-			int docId = hit.doc;
-			Document d = searcher.doc(docId);
-			System.out.printf("\t(%s): %s\n", d.get("number"), d.get("title"));
-		}
-		*/
+        this.searcher = new IndexSearcher(reader);
     }
 
+    @AfterEach
+    void clean() throws IOException {
+        this.index.close();
+    }
 }
