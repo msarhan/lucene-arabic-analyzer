@@ -6,6 +6,14 @@
 
 # lucene-arabic-analyzer
 Apache Lucene analyzer for Arabic language with root based stemmer.
+- [lucene-arabic-analyzer](#lucene-arabic-analyzer)
+  - [Introduction](#introduction)
+  - [Installation](#installation)
+  - [Usage](#usage)
+    - [Usage of `ArabicRootExtractorStemmer`](#usage-of-arabicrootextractorstemmer)
+  - [Integration with Elasticsearch](#integration-with-elasticsearch)
+  - [Building](#building)
+## Introduction
 
 Stemming algorithms are used in information retrieval systems, text classifiers, indexers and text mining to extract roots of different words, so that words derived from the same stem or root are grouped together.
 - Version `2.x` is based on [Alkhlil Morpho System](https://ossl.alecso.org/affich_oso_details.php).
@@ -87,6 +95,9 @@ assertTrue(stemmer.stem("الْعَالَمِينَ").stream().anyMatch(s -> s.e
 assertTrue(stemmer.stem("الْمُؤْمِنِينَ").stream().anyMatch(s -> s.equals("ءمن")));
 assertTrue(stemmer.stem("يَتَنَازَعُونَ").stream().anyMatch(s -> s.equals("نزع")));
 ```
+
+## Integration with Elasticsearch
+To use this Analyzer with Elasticsearch, use [elasticsearch-arabic-analyzer](https://github.com/msarhan/elasticsearch-arabic-analyzer) plugin.
 
 ## Building
 ```bash
