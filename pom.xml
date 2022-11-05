@@ -6,7 +6,7 @@
 
   <groupId>com.github.msarhan</groupId>
   <artifactId>lucene-arabic-analyzer</artifactId>
-  <version>2.0.2</version>
+  <version>2.1.1</version>
   <packaging>jar</packaging>
   <name>${project.groupId}:${project.artifactId}</name>
   <description>Apache Lucene analyzer for Arabic language with root based stemmer.</description>
@@ -33,9 +33,9 @@
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <maven.compiler.source>1.8</maven.compiler.source>
-    <maven.compiler.target>1.8</maven.compiler.target>
-    <lucene.version>8.11.1</lucene.version>
+    <maven.compiler.source>11</maven.compiler.source>
+    <maven.compiler.target>11</maven.compiler.target>
+    <lucene.version>9.3.0</lucene.version>
     <junit.version>5.9.0</junit.version>
   </properties>
 
@@ -48,7 +48,7 @@
     </dependency>
     <dependency>
       <groupId>org.apache.lucene</groupId>
-      <artifactId>lucene-analyzers-common</artifactId>
+      <artifactId>lucene-analysis-common</artifactId>
       <version>${lucene.version}</version>
       <scope>provided</scope>
     </dependency>
