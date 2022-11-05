@@ -4,4 +4,4 @@ COPY Tester.java /tmp
 
 WORKDIR /tmp
 
-CMD ["java", "-cp", "lucene-arabic-analyzer-2.0.0.jar", "Tester.java"]
+CMD ["java", "-cp", "lucene-arabic-analyzer-2.0.1.jar", "Tester.java"]
