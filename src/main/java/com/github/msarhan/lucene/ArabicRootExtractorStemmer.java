@@ -37,10 +37,18 @@ import java.util.*;
  */
 public class ArabicRootExtractorStemmer {
 
+    /*
+     * AnalyzerTokens lazy-loads ~50 AlKhalil XML resources into per-instance maps and is not
+     * thread-safe (mutable Stemming buffers, exception/proper-noun analyzers). Sharing one per
+     * thread amortizes the XML parse cost across every stemmer/filter/analyzer the thread ever
+     * uses, instead of paying it again whenever a caller constructs a fresh stemmer.
+     */
+    private static final ThreadLocal<AnalyzerTokens> ANALYZER_TOKENS =
+        ThreadLocal.withInitial(AnalyzerTokens::new);
+
     public Set<String> stem(String token) {
-        final AnalyzerTokens analyzerTokens = new AnalyzerTokens();
         Set<String> roots = new LinkedHashSet<>(1);
-        for (Object o : analyzerTokens.analyzerToken(token)) {
+        for (Object o : ANALYZER_TOKENS.get().analyzerToken(token)) {
             Result res = (Result) o;
             roots.add(!"#".equals(res.getRoot()) ? res.getRoot() : res.getStem());
         }
